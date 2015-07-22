@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register_incorrect_details">001. Incorrect Details!!! Please verify.</string>
+    <string name="register_employee_not_authorized">002. You are not authorized to use this App!!</string>
+    <string name="register_incorrect_mobile_number">003. Please use mobile for the number you have entered!!</string>
+    <string name="otp_invalid_otp">004. Invalid OTP!!</string>
+    <string name="upload_image_success">Attendance Marked Successfully.</string>
+
+
+</resources>
