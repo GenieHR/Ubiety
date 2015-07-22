@@ -46,7 +46,6 @@ public class UploadActivity extends Activity {
     private TextView txtPercentage;
     private ImageView imgPreview;
     private VideoView vidPreview;
-    private Button btnUpload;
     long totalSize = 0;
 
     public LocationData LocationData;
@@ -54,14 +53,14 @@ public class UploadActivity extends Activity {
     public int markCount = 0;
     SharedPreferences.Editor putprefs ;
     Boolean photoProperlyUploaded = false;
-
+     static String confMsg = "Attendance Marked Successfully.";
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
         txtPercentage = (TextView) findViewById(R.id.txtPercentage);
-        btnUpload = (Button) findViewById(R.id.btnUpload);
+        Button btnUpload = (Button) findViewById(R.id.btnUpload);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgPreview = (ImageView) findViewById(R.id.imgPreview);
         vidPreview = (VideoView) findViewById(R.id.videoPreview);
@@ -94,27 +93,36 @@ public class UploadActivity extends Activity {
                 SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
                 LocationData = new LocationData(prefs.getString("EmpNum", "Error"));
                 try {
-                    new UploadFileToServer().execute(LocationData).get();
 
-                    if (photoProperlyUploaded) {
-                        locDat = new LocationData();
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 
-                        Integer[] attendanceValues = new Integer[2];
-                        attendanceValues[0] = prefs.getInt("EmpId", -1);
-                        attendanceValues[1] = 1; //TODO: Check later //Shift Status
+                    SharedPreferences getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
+                    putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
 
-                        new PunchAttendance().execute(attendanceValues);
+                    markCount = getprefs.getInt("MarkCount", 0) + 1;
 
-                        putprefs.commit();
-                    }
-                    else
-                    {
-                        putprefs.clear();
-                    }
+                    putprefs.putString("Today", df.format(c.getTime()));
+                    putprefs.putInt("MarkCount", markCount);
+
+                    putprefs.apply();
+
+                    locDat = new LocationData();
+
+                    Integer[] attendanceValues = new Integer[2];
+
+                    attendanceValues[0] = prefs.getInt("EmpId", -1);
+                    attendanceValues[1] = 1; //TODO: Check later //Shift Status
+
+                    new PunchAttendance().execute(attendanceValues);
+                    new UploadFileToServer().execute(LocationData);
+
+                    putprefs.commit();
                 }
                 catch (Exception ex) {
-                //TODO: Delete the uploaded blob if any
-                putprefs.clear();
+                    putprefs.clear();
+                // TODO: Delete the uploaded blob if any
+                // TODO: Delete data if present
                 }
             }
         });
@@ -175,7 +183,6 @@ public class UploadActivity extends Activity {
 
                 String urlString = Config.API_URL + Config.ATTENDANCE_METHOD +  Integer.toString(AttendanceDetails[0]) + "/" + Integer.toString(AttendanceDetails[1]) + "/" + Double.toString(lat) + "/" + Double.toString(lon) + "/" + Integer.toString(markCount) + "/";
                 URL url = new URL(urlString);
-                Log.i("URLString", urlString);
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 s = httpURLConnection.getResponseMessage();
 
@@ -246,8 +253,6 @@ public class UploadActivity extends Activity {
                 // Extra parameters if you want to pass to server
 
                 entity.addPart("name", new StringBody(name, ContentType.TEXT_PLAIN));
-//                entity.addPart("latitude", new StringBody(Double.toString(Latitude), ContentType.TEXT_PLAIN));
-//                entity.addPart("longitude", new StringBody(Double.toString(Longitude), ContentType.TEXT_PLAIN));
                 entity.addPart("count", new StringBody(Integer.toString(markCount), ContentType.TEXT_PLAIN));
 
                 totalSize = entity.getContentLength();
@@ -261,20 +266,8 @@ public class UploadActivity extends Activity {
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode == 200) {
                     // Server response
-                    responseString = "Attendance Marked Successfully.";
+                    responseString = confMsg;
 
-                    Calendar c = Calendar.getInstance();
-                    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-
-                    SharedPreferences getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
-                    putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
-
-                    markCount = getprefs.getInt("MarkCount", 0) + 1;
-
-                    putprefs.putString("Today", df.format(c.getTime()));
-                    putprefs.putInt("MarkCount", markCount);
-
-                    putprefs.apply();
 
                 } else {
                     responseString = "Error occurred! Http Status Code: "
@@ -286,7 +279,6 @@ public class UploadActivity extends Activity {
             } catch (IOException e) {
                 responseString = e.toString();
             }
-
             return responseString;
         }
 
@@ -296,10 +288,6 @@ public class UploadActivity extends Activity {
 
             // showing the server response in an alert dialog
             showAlert(result);
-
-            if(!result.equals("Attendance Marked Successfully.")){
-                photoProperlyUploaded = false;
-            }
             super.onPostExecute(result);
         }
 

@@ -133,9 +133,11 @@ public class AttendanceActivity extends AppCompatActivity {
                String getPrefToday =  prefs.getString("Today", "19000101");
                Integer getMarkCount =  prefs.getInt("MarkCount", 0);
 
-                if (getPrefToday.equals(actualToday)) {
+                String stractualToday = actualToday.format(c.getTime());
 
-                    if (getMarkCount == Config.total_mark_count) {
+                if (getPrefToday.equals(stractualToday)) {
+
+                    if (getMarkCount >= Config.total_mark_count) {
 
                         showAlert("You have already marked your attendances. No further marking is required for today. Thank You.");
                         //TODO: Change the message
