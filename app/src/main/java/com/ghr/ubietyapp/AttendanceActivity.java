@@ -39,7 +39,7 @@ public class AttendanceActivity extends AppCompatActivity {
 
     private Uri fileUri; // file url to store image/video
 
-    String TITLES[] = {"Profile","Attendance","Messages"};
+    String TITLES[] = {"Profile", "Attendance", "Messages"};
     int ICONS[] = {R.drawable.ic_user,R.drawable.ic_inout,R.drawable.ic_message};
 
     int PROFILE = R.drawable.ic_user;
@@ -98,8 +98,6 @@ public class AttendanceActivity extends AppCompatActivity {
                 // Code here will execute once drawer is closed
             }
 
-
-
         }; // Drawer Toggle Object Made
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
@@ -113,6 +111,8 @@ public class AttendanceActivity extends AppCompatActivity {
 
         btnCapturePicture = (Button) findViewById(R.id.btnCapturePicture);
         btnRecordVideo = (Button) findViewById(R.id.btnRecordVideo);
+
+        btnRecordVideo.setVisibility(View.GONE);
 
         /**
          * Capture image button click event
@@ -139,14 +139,14 @@ public class AttendanceActivity extends AppCompatActivity {
         /**
          * Record video button click event
          */
-        btnRecordVideo.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // record video
-                //                recordVideo();
-            }
-        });
+//        btnRecordVideo.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                // record video
+//                //                recordVideo();
+//            }
+//        });
 
         // Checking camera availability
         if (!isDeviceSupportCamera()) {
@@ -189,20 +189,20 @@ public class AttendanceActivity extends AppCompatActivity {
     /**
      * Launching camera app to record video
      */
-    private void recordVideo() {
-        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-
-        // set video quality
-        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file
-        // name
-
-        // start the video capture Intent
-        startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
-    }
+//    private void recordVideo() {
+//        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+//
+//        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+//
+//        // set video quality
+//        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+//
+//        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file
+//        // name
+//
+//        // start the video capture Intent
+//        startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
+//    }
 
     /**
      * Here we store the file url as it will be null after returning from camera
