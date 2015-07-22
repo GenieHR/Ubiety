@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class UploadActivity extends Activity {
     // LogCat tag
@@ -49,6 +51,9 @@ public class UploadActivity extends Activity {
 
     public LocationData LocationData;
     LocationData locDat;
+    public int markCount = 0;
+    SharedPreferences.Editor putprefs ;
+    Boolean photoProperlyUploaded = false;
 
     @Override
 
@@ -88,15 +93,29 @@ public class UploadActivity extends Activity {
 
                 SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
                 LocationData = new LocationData(prefs.getString("EmpNum", "Error"));
+                try {
+                    new UploadFileToServer().execute(LocationData).get();
 
-                new UploadFileToServer().execute(LocationData);
-                locDat = new LocationData();
+                    if (photoProperlyUploaded) {
+                        locDat = new LocationData();
 
-                Integer[] attendanceValues = new Integer[2];
-                attendanceValues[0] = prefs.getInt("EmpId", -1);
-                attendanceValues[1] = 1; //TODO: Check later //Shift Status
+                        Integer[] attendanceValues = new Integer[2];
+                        attendanceValues[0] = prefs.getInt("EmpId", -1);
+                        attendanceValues[1] = 1; //TODO: Check later //Shift Status
 
-                new PunchAttendance().execute(attendanceValues);
+                        new PunchAttendance().execute(attendanceValues);
+
+                        putprefs.commit();
+                    }
+                    else
+                    {
+                        putprefs.clear();
+                    }
+                }
+                catch (Exception ex) {
+                //TODO: Delete the uploaded blob if any
+                putprefs.clear();
+                }
             }
         });
     }
@@ -104,7 +123,6 @@ public class UploadActivity extends Activity {
     /**
      * Displaying captured image/video on the screen
      * */
-
     private void previewMedia(boolean isImage) {
         // Checking whether captured media is image or video
         if (isImage) {
@@ -129,11 +147,10 @@ public class UploadActivity extends Activity {
         }
     }
 
-
     private class LocationData {
         Double Latitude, Longitude;
         String EmployeeName;
-        int markCount;
+        int markCounter;
         GPSTracker gpsTracker = new GPSTracker(UploadActivity.this);
 
         public LocationData(String employeeName) {
@@ -143,7 +160,7 @@ public class UploadActivity extends Activity {
         public LocationData() {
             this.Latitude = gpsTracker.getLatitude();
             this.Longitude = gpsTracker.getLongitude();
-            this.markCount = 1;
+            this.markCounter = markCount;
         }
     }
 
@@ -154,7 +171,7 @@ public class UploadActivity extends Activity {
             try {
                 Double lat = locDat.Latitude;
                 Double lon = locDat.Longitude;
-                Integer markCount = locDat.markCount;
+                Integer markCount = locDat.markCounter;
 
                 String urlString = Config.API_URL + Config.ATTENDANCE_METHOD +  Integer.toString(AttendanceDetails[0]) + "/" + Integer.toString(AttendanceDetails[1]) + "/" + Double.toString(lat) + "/" + Double.toString(lon) + "/" + Integer.toString(markCount) + "/";
                 URL url = new URL(urlString);
@@ -167,12 +184,17 @@ public class UploadActivity extends Activity {
             }
             return s;
         }
+        @Override
+        protected void onPostExecute(String result) {
+
+            showAlert("Attendance Marked Successfully");
+            super.onPostExecute(result);
+        }
     }
 
     /**
      * Uploading the file to server
      * */
-
 
     private class UploadFileToServer extends AsyncTask<LocationData, Integer, String> {
         @Override
@@ -226,7 +248,7 @@ public class UploadActivity extends Activity {
                 entity.addPart("name", new StringBody(name, ContentType.TEXT_PLAIN));
 //                entity.addPart("latitude", new StringBody(Double.toString(Latitude), ContentType.TEXT_PLAIN));
 //                entity.addPart("longitude", new StringBody(Double.toString(Longitude), ContentType.TEXT_PLAIN));
-
+                entity.addPart("count", new StringBody(Integer.toString(markCount), ContentType.TEXT_PLAIN));
 
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
@@ -240,6 +262,20 @@ public class UploadActivity extends Activity {
                 if (statusCode == 200) {
                     // Server response
                     responseString = "Attendance Marked Successfully.";
+
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+
+                    SharedPreferences getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
+                    putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
+
+                    markCount = getprefs.getInt("MarkCount", 0) + 1;
+
+                    putprefs.putString("Today", df.format(c.getTime()));
+                    putprefs.putInt("MarkCount", markCount);
+
+                    putprefs.apply();
+
                 } else {
                     responseString = "Error occurred! Http Status Code: "
                             + statusCode;
@@ -261,6 +297,9 @@ public class UploadActivity extends Activity {
             // showing the server response in an alert dialog
             showAlert(result);
 
+            if(!result.equals("Attendance Marked Successfully.")){
+                photoProperlyUploaded = false;
+            }
             super.onPostExecute(result);
         }
 

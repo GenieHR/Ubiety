@@ -1,5 +1,7 @@
 package com.ghr.ubietyapp;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -122,6 +125,23 @@ public class AttendanceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // capture picture
+                Calendar c = Calendar.getInstance();
+                SimpleDateFormat actualToday = new SimpleDateFormat("yyyyMMdd");
+
+                SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
+
+               String getPrefToday =  prefs.getString("Today", "19000101");
+               Integer getMarkCount =  prefs.getInt("MarkCount", 0);
+
+                if (getPrefToday.equals(actualToday)) {
+
+                    if (getMarkCount == Config.total_mark_count) {
+
+                        showAlert("You have already marked your attendances. No further marking is required for today. Thank You.");
+                        //TODO: Change the message
+                        return;
+                    }
+                }
 
                 GPSTracker gps = new GPSTracker(AttendanceActivity.this);
                 if (gps.canGetLocation())
@@ -133,6 +153,7 @@ public class AttendanceActivity extends AppCompatActivity {
                     gps.showSettingsAlert("GPS needs to be enabled");
                     //TODO: Change the message
                 }
+
             }
         });
 
@@ -156,6 +177,19 @@ public class AttendanceActivity extends AppCompatActivity {
             // will close the app if the device does't have camera
             finish();
         }
+    }
+
+    private void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message).setTitle("Message")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // do nothing
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     /**
