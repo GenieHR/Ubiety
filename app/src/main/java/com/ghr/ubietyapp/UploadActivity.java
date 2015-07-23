@@ -287,7 +287,9 @@ public class UploadActivity extends Activity {
             Log.e(TAG, "Response from server: " + result);
 
             // showing the server response in an alert dialog
-            showAlert(result);
+            if (!result.equals(confMsg)) {
+//            showAlert(result);
+            }
             super.onPostExecute(result);
         }
 
