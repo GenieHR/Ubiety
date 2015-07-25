@@ -328,6 +328,7 @@ public class AttendanceActivity extends AppCompatActivity {
         i.putExtra("filePath", fileUri.getPath());
         i.putExtra("isImage", isImage);
         startActivity(i);
+        finish();
     }
 
     /**

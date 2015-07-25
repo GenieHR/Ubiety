@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -47,7 +46,7 @@ public class UploadActivity extends Activity {
     private ImageView imgPreview;
     private VideoView vidPreview;
     long totalSize = 0;
-
+public Button btnUpload;
     public LocationData LocationData;
     LocationData locDat;
     public int markCount = 0;
@@ -60,7 +59,7 @@ public class UploadActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
         txtPercentage = (TextView) findViewById(R.id.txtPercentage);
-        Button btnUpload = (Button) findViewById(R.id.btnUpload);
+        btnUpload = (Button) findViewById(R.id.btnUpload);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgPreview = (ImageView) findViewById(R.id.imgPreview);
         vidPreview = (VideoView) findViewById(R.id.videoPreview);
@@ -219,6 +218,8 @@ public class UploadActivity extends Activity {
 
             // updating percentage value
             txtPercentage.setText(String.valueOf(progress[0]) + "%");
+            btnUpload.setVisibility(View.GONE);
+
         }
 
         @Override
@@ -282,10 +283,12 @@ public class UploadActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            Log.e(TAG, "Response from server: " + result);
+            //Log.e(TAG, "Response from server: " + result);
 
             // showing the server response in an alert dialog
+
             showAlert(result);
+
             super.onPostExecute(result);
         }
 
@@ -301,10 +304,14 @@ public class UploadActivity extends Activity {
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // do nothing
+                        Intent intent = new Intent(UploadActivity.this, AttendanceActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
                 });
         AlertDialog alert = builder.create();
         alert.show();
     }
+
+
 }
