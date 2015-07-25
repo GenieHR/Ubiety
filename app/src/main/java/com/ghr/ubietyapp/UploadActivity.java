@@ -91,11 +91,11 @@ public class UploadActivity extends Activity {
                 // uploading the file to server
 
                 SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
-                LocationData = new LocationData(prefs.getString("EmpNum", "Error"));
+                LocationData = new LocationData(Integer.toString(prefs.getInt("EmpId", -1)));
                 try {
 
                     Calendar c = Calendar.getInstance();
-                    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyyMMMdd");
 
                     SharedPreferences getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
                     putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
@@ -193,8 +193,6 @@ public class UploadActivity extends Activity {
         }
         @Override
         protected void onPostExecute(String result) {
-
-            showAlert("Attendance Marked Successfully");
             super.onPostExecute(result);
         }
     }
@@ -287,9 +285,7 @@ public class UploadActivity extends Activity {
             Log.e(TAG, "Response from server: " + result);
 
             // showing the server response in an alert dialog
-            if (!result.equals(confMsg)) {
-//            showAlert(result);
-            }
+            showAlert(result);
             super.onPostExecute(result);
         }
 

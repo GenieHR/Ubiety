@@ -126,7 +126,7 @@ public class AttendanceActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // capture picture
                 Calendar c = Calendar.getInstance();
-                SimpleDateFormat actualToday = new SimpleDateFormat("yyyyMMdd");
+                SimpleDateFormat actualToday = new SimpleDateFormat("yyyyMMMdd");
 
                 SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
 
@@ -135,25 +135,36 @@ public class AttendanceActivity extends AppCompatActivity {
 
                 String stractualToday = actualToday.format(c.getTime());
 
-                if (getPrefToday.equals(stractualToday) && getMarkCount >= Config.total_mark_count) {
+                GPSTracker gps = new GPSTracker(AttendanceActivity.this);
 
-                        showAlert("You have already marked your attendances. No further marking is required for today. Thank You.");
-                        //TODO: Change the message
-                        return;
-                }
-                else
-                {
-                    GPSTracker gps = new GPSTracker(AttendanceActivity.this);
-                    if (gps.canGetLocation())
-                    {
-                        captureImage();
+                if (getPrefToday.equals(stractualToday)) { //same day as earlier punch
+                        if (getMarkCount == Config.total_mark_count) { //all markings done for the day
+                            showAlert("You have already marked your attendances. No further marking is required for today. Thank You.");
+                            //TODO: Change the message
+                            return;
                     }
-                    else
-                    {
-                        gps.showSettingsAlert("GPS needs to be enabled");
-                        //TODO: Change the message
-                    }
+                    else // all markings not done for day
+                        {
+                            if (gps.canGetLocation()) {
+                                captureImage();
+                            } else {
+                                gps.showSettingsAlert("GPS needs to be enabled");
+                                //TODO: Change the message
+                            }
+                        }
                 }
+                else { //markings being done for the new day
+                    SharedPreferences.Editor putprefs ;
+                    putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
+                    putprefs.putInt("MarkCount", 0); //reset markcount to zero
+
+                        if (gps.canGetLocation()) {
+                            captureImage();
+                        } else {
+                            gps.showSettingsAlert("GPS needs to be enabled");
+                            //TODO: Change the message
+                        }
+                    }
             }
         });
 

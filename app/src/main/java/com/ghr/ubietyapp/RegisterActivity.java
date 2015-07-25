@@ -82,7 +82,7 @@ String mobNum;
                             SharedPreferences.Editor settings = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
 
                             Calendar c = Calendar.getInstance();
-                            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                            SimpleDateFormat df = new SimpleDateFormat("yyyyMMMdd");
 
                             settings.putString("EmpName", jsonobject.getString("EmpName"));
                             settings.putInt("EmpId", jsonobject.getInt("EmpId"));
