@@ -135,27 +135,25 @@ public class AttendanceActivity extends AppCompatActivity {
 
                 String stractualToday = actualToday.format(c.getTime());
 
-                if (getPrefToday.equals(stractualToday)) {
-
-                    if (getMarkCount >= Config.total_mark_count) {
+                if (getPrefToday.equals(stractualToday) && getMarkCount >= Config.total_mark_count) {
 
                         showAlert("You have already marked your attendances. No further marking is required for today. Thank You.");
                         //TODO: Change the message
                         return;
-                    }
-                }
-
-                GPSTracker gps = new GPSTracker(AttendanceActivity.this);
-                if (gps.canGetLocation())
-                {
-                    captureImage();
                 }
                 else
                 {
-                    gps.showSettingsAlert("GPS needs to be enabled");
-                    //TODO: Change the message
+                    GPSTracker gps = new GPSTracker(AttendanceActivity.this);
+                    if (gps.canGetLocation())
+                    {
+                        captureImage();
+                    }
+                    else
+                    {
+                        gps.showSettingsAlert("GPS needs to be enabled");
+                        //TODO: Change the message
+                    }
                 }
-
             }
         });
 
