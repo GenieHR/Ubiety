@@ -13,7 +13,7 @@
     <string name="title_activity_otp">OTPActivity</string>
     <string name="title_activity_attendance">AttendanceActivity</string>
     <string name="title_activity_upload">UploadActivity</string>
-    <string name="btnTakePicture">Capture Image</string>
+    <string name="btnTakePicture">Mark Attendance</string>
     <string name="btnRecordVideo">Record Video</string>
     <string name="or">(or)</string>
     <string name="btnUploadToServer">Upload to Server</string>

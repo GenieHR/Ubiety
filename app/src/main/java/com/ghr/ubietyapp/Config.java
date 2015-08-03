@@ -12,11 +12,11 @@ public class Config {
 
     public static final String PREFS_NAME = "UbietyPreferences";
 
-
     // Directory name to store captured images and videos
+
     public static final String IMAGE_DIRECTORY_NAME = "Android File Upload";
 
-    public static final int total_mark_count = 2;
+    public static final int total_mark_count = 20;
 
 }
 

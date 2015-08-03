@@ -19,7 +19,6 @@ import android.widget.VideoView;
 
 import com.ghr.ubietyapp.AndroidMultiPartEntity.ProgressListener;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -46,11 +45,13 @@ public class UploadActivity extends Activity {
     private ImageView imgPreview;
     private VideoView vidPreview;
     long totalSize = 0;
-public Button btnUpload;
+    public Button btnUpload;
     public LocationData LocationData;
     LocationData locDat;
     public int markCount = 0;
     SharedPreferences.Editor putprefs ;
+    SharedPreferences getprefs ;
+
     Boolean photoProperlyUploaded = false;
      static String confMsg = "Attendance Marked Successfully.";
     @Override
@@ -63,7 +64,7 @@ public Button btnUpload;
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgPreview = (ImageView) findViewById(R.id.imgPreview);
         vidPreview = (VideoView) findViewById(R.id.videoPreview);
-
+        getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
         // Receiving the data from previous activity
 
         Intent i = getIntent();
@@ -89,14 +90,11 @@ public Button btnUpload;
 
                 // uploading the file to server
 
-                SharedPreferences prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
-                LocationData = new LocationData(Integer.toString(prefs.getInt("EmpId", -1)));
+                LocationData = new LocationData(Integer.toString(getprefs.getInt("EmpId", -1)));
                 try {
-
                     Calendar c = Calendar.getInstance();
                     SimpleDateFormat df = new SimpleDateFormat("yyyyMMMdd");
 
-                    SharedPreferences getprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
                     putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
 
                     markCount = getprefs.getInt("MarkCount", 0) + 1;
@@ -104,24 +102,11 @@ public Button btnUpload;
                     putprefs.putString("Today", df.format(c.getTime()));
                     putprefs.putInt("MarkCount", markCount);
 
-                    putprefs.apply();
-
                     locDat = new LocationData();
-
-                    Integer[] attendanceValues = new Integer[2];
-
-                    attendanceValues[0] = prefs.getInt("EmpId", -1);
-                    attendanceValues[1] = 1; //TODO: Check later //Shift Status
-
-                    new PunchAttendance().execute(attendanceValues);
                     new UploadFileToServer().execute(LocationData);
-
-                    putprefs.commit();
                 }
                 catch (Exception ex) {
                     putprefs.clear();
-                // TODO: Delete the uploaded blob if any
-                // TODO: Delete data if present
                 }
             }
         });
@@ -130,6 +115,7 @@ public Button btnUpload;
     /**
      * Displaying captured image/video on the screen
      * */
+
     private void previewMedia(boolean isImage) {
         // Checking whether captured media is image or video
         if (isImage) {
@@ -158,6 +144,7 @@ public Button btnUpload;
         Double Latitude, Longitude;
         String EmployeeName;
         int markCounter;
+        int empId;
         GPSTracker gpsTracker = new GPSTracker(UploadActivity.this);
 
         public LocationData(String employeeName) {
@@ -168,6 +155,7 @@ public Button btnUpload;
             this.Latitude = gpsTracker.getLatitude();
             this.Longitude = gpsTracker.getLongitude();
             this.markCounter = markCount;
+            this.empId = getprefs.getInt("EmpId",0);
         }
     }
 
@@ -210,16 +198,12 @@ public Button btnUpload;
 
         @Override
         protected void onProgressUpdate(Integer... progress) {
-            // Making progress bar visible
+
             progressBar.setVisibility(View.VISIBLE);
-
-            // updating progress bar value
             progressBar.setProgress(progress[0]);
-
-            // updating percentage value
             txtPercentage.setText(String.valueOf(progress[0]) + "%");
-            btnUpload.setVisibility(View.GONE);
 
+            btnUpload.setVisibility(View.GONE);
         }
 
         @Override
@@ -245,28 +229,23 @@ public Button btnUpload;
 
                 File sourceFile = new File(filePath);
 
-                // Adding file data to http body
-
                 entity.addPart("image", new FileBody(sourceFile));
-
-                // Extra parameters if you want to pass to server
-
                 entity.addPart("name", new StringBody(name, ContentType.TEXT_PLAIN));
                 entity.addPart("count", new StringBody(Integer.toString(markCount), ContentType.TEXT_PLAIN));
+                entity.addPart("longitude", new StringBody(Double.toString(locDat.Longitude), ContentType.TEXT_PLAIN));
+                entity.addPart("latitude", new StringBody(Double.toString(locDat.Latitude), ContentType.TEXT_PLAIN));
+                entity.addPart("empId", new StringBody(Integer.toString(locDat.empId),ContentType.TEXT_PLAIN));
 
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
 
-                // Making server call
-
                 HttpResponse response = httpclient.execute(httppost);
-                HttpEntity r_entity = response.getEntity();
 
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode == 200) {
-                    // Server response
-                    responseString = confMsg;
 
+                    responseString = confMsg;
+                    putprefs.commit();
 
                 } else {
                     responseString = "Error occurred! Http Status Code: "
@@ -283,20 +262,10 @@ public Button btnUpload;
 
         @Override
         protected void onPostExecute(String result) {
-            //Log.e(TAG, "Response from server: " + result);
-
-            // showing the server response in an alert dialog
-
             showAlert(result);
-
             super.onPostExecute(result);
         }
-
     }
-
-    /**
-     * Method to show alert dialog
-     * */
 
     private void showAlert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -312,6 +281,4 @@ public Button btnUpload;
         AlertDialog alert = builder.create();
         alert.show();
     }
-
-
 }

@@ -17,10 +17,10 @@ android {
 
     defaultConfig {
         applicationId "com.ghr.ubietyapp"
-        minSdkVersion 13
+        minSdkVersion 10
         targetSdkVersion 22
-        versionCode 6
-        versionName "1.5"
+        versionCode 9
+        versionName "1.8"
     }
     buildTypes {
         release {

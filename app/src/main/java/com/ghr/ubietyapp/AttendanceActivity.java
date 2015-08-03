@@ -60,7 +60,6 @@ public class AttendanceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance);
 
-
         SharedPreferences prefs ;
         prefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE);
 
@@ -157,8 +156,9 @@ public class AttendanceActivity extends AppCompatActivity {
                     SharedPreferences.Editor putprefs ;
                     putprefs = getSharedPreferences(Config.PREFS_NAME, MODE_PRIVATE).edit();
                     putprefs.putInt("MarkCount", 0); //reset markcount to zero
-
+                    putprefs.apply();
                         if (gps.canGetLocation()) {
+                            putprefs.commit();
                             captureImage();
                         } else {
                             gps.showSettingsAlert("GPS needs to be enabled");
